@@ -17,7 +17,7 @@ offers = pd.read_csv("data_offers.csv")
 dataset = orders.merge(right=offers, how="inner", on="order_gk")
 
 
-dataset["is_driver_assigned"] = np.where(dataset["is_driver_assigned_key"] == 1, "Yes", "No")
+dataset["is_driver_assigned"] = np.where(dataset["is_driver_assigned_key"] == 1, "Was_assigned", "Not_assigned")
 dataset["order_status"] = np.where(dataset["order_status_key"] == 4, "Client Cancelled", "System Reject")
 
 dataset.drop(columns=["is_driver_assigned_key", "order_status_key"], inplace=True)
@@ -40,7 +40,6 @@ A1 = dataset.pivot_table(columns=["is_driver_assigned", "order_status"], values=
 p1 = A1.plot(kind="bar", subplots=False, figsize=(7, 7), legend=True, rot=0)
 
 
-
 # =============================================================================
 # Question 2
 # Plot the distribution of failed orders by hours. 
@@ -48,14 +47,28 @@ p1 = A1.plot(kind="bar", subplots=False, figsize=(7, 7), legend=True, rot=0)
 # What hours are the biggest fails? How can this be explained?
 # =============================================================================
 
-
+plt.figure()
 dataset["hours"] = dataset["order_time"].str.split(":").apply(lambda split: split[0])
 
-A2 = dataset.groupby(by=["hours", "is_driver_assigned", "order_status"])["order_gk"].count()
+p2 = dataset.groupby(by="hours")["order_gk"].count().plot(figsize=(10, 7),
+                                                         legend=True,
+                                                         xticks=range(0, 24),
+                                                         title="Count of Failed Orders by Hour of Day")
 
-p2 = A2.reset_index().pivot(index="hours",columns=["is_driver_assigned", "order_status"],values="order_gk").plot(xticks=range(0, 24),
-                                                                                                                 figsize=(13, 7),
-                                                                                                                 title="Count of Failed Orders Per Hour and Category")
+A2 = dataset.groupby(by=["hours", "is_driver_assigned", "order_status"])["order_gk"].count()
+plt.figure()
+p2 = A2.reset_index().pivot(index="hours",
+                                   columns=["is_driver_assigned", "order_status"],
+                                   values="order_gk").plot(xticks=range(0, 24),
+                                                           figsize=(13, 7),
+                                                           title="Count of Failed Orders Per Hour and Category")
+                                                           
+                                                           
+                                                           
+
+                                                          
+                                                           
+                                                           
 # =============================================================================
 # Question 3
 # Plot the average time to cancellation with and without driver, by hour. 
@@ -63,11 +76,13 @@ p2 = A2.reset_index().pivot(index="hours",columns=["is_driver_assigned", "order_
 # =============================================================================
 
 
-
+plt.figure() 
 A3 = dataset.groupby(by=["hours", "is_driver_assigned"])["cancellations_time_in_seconds"].mean()
-p3 = A3.reset_index().pivot(index="hours",columns="is_driver_assigned",values="cancellations_time_in_seconds").plot(xticks=range(0, 24),
-                                                                                                                    figsize=(13, 7),
-                                                                                                                    title="Average Time to Cancellation Per Hour and Driver Assignment")
+p3 = A3.reset_index().pivot(index="hours",
+                                   columns="is_driver_assigned",
+                                   values="cancellations_time_in_seconds").plot(xticks=range(0, 24),
+                                                                                figsize=(13, 7),
+                                                                                title="Average Time to Cancellation Per Hour and Driver Assignment")
 
 
 # =============================================================================
@@ -75,25 +90,11 @@ p3 = A3.reset_index().pivot(index="hours",columns="is_driver_assigned",values="c
 # Plot the distribution of average ETA by hours. How can this plot be explained?
 # =============================================================================
 
-
+plt.figure()
 A4 = dataset.groupby(by="hours")["m_order_eta"].mean()
-p4 = A4.plot(figsize=(14, 7), xticks=range(0, 24),  title="Average ETA per hour")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+p4 = A4.plot(figsize=(14, 7),
+                                                           xticks=range(0, 24),
+                                                           title="Average ETA per hour")
 
 
 
